@@ -1,1 +1,46 @@
-Juego de Anotaciónn de Bondis
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Botones numerados</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #f1f1f1;
+      font-family: Arial, sans-serif;
+    }
+
+    .tablero {
+      display: grid;
+      grid-template-columns: repeat(6, 65px);
+      gap: 8px;
+      justify-content: center;
+    }
+
+    
+.boton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: red;
+}
+
+.boton::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: white;
+}
