@@ -22,7 +22,7 @@
       min-height: 100vh;
     }
 
-    /* Contenedor Superior Requerido */
+    /* 2 rectángulos decorativos superiores de 3px */
     .rect-top-1 {
       width: 100%;
       max-width: 450px;
@@ -40,7 +40,7 @@
       box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
     }
 
-    /* Panel de Control de 450px */
+    /* Panel Principal de 450px */
     .main-panel-450 {
       width: 100%;
       max-width: 450px;
@@ -147,7 +147,7 @@
       font-size: 0.8rem;
     }
 
-    /* Grid del Tablero */
+    /* Grid de Chapas */
     .grid-container {
       margin-top: 25px;
       width: 100%;
@@ -157,7 +157,7 @@
       gap: 12px;
     }
 
-    /* Estilo Chapa de Colectivo (2 franjas + fondo) */
+    /* Estilo Chapa de Colectivo (2 franjas + cuerpo) */
     .bus-card {
       display: flex;
       flex-direction: column;
@@ -169,7 +169,7 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.3);
       transition: transform 0.15s ease, filter 0.2s ease, opacity 0.2s ease;
       user-select: none;
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
     }
 
     .bus-card:hover {
@@ -213,7 +213,7 @@
       filter: grayscale(40%);
     }
 
-    /* Estado ANOTADO (Vibrante) */
+    /* Estado ANOTADO (100% Color y Brillo) */
     .bus-card.anotado {
       opacity: 1;
       filter: grayscale(0%) drop-shadow(0 0 6px rgba(255,255,255,0.3));
@@ -246,7 +246,7 @@
       </div>
     </div>
 
-    <!-- Toggle de Leyenda -->
+    <!-- Toggle Leyenda Anotado / No Anotado -->
     <div class="toggle-legend">
       <button class="legend-btn active-anotado" id="btn-mode-anotado" onclick="setMode('anotado')">Marcar Anotado</button>
       <button class="legend-btn" id="btn-mode-no-anotado" onclick="setMode('no-anotado')">Marcar No Anotado</button>
@@ -262,13 +262,74 @@
   <div class="grid-container" id="grid"></div>
 
   <script>
-    // Exclusiones: 3, 5, 6, 11, 13, 14, 16, 18, 23, 27, 30, 35, 36, 38, 40, 43, 48, 52, 54, 58, 66, 69, 72, 73, 75, 77, 81, 82, 83, 89, 90, 94, 104, 112, 116, 120, 121, 122, 125, 131, 137, 138, 139, 141, 142, 144, 147, 149, 155, 156, 157, 162, 165, 167, 170, 171, 173, 175, 183, 186, 187, 189, 190, 191, 192, 196, 198, 199
+    // Exclusiones: incluye 3 y el resto del listado
     const EXCLUDED = new Set([3, 5, 6, 11, 13, 14, 16, 18, 23, 27, 30, 35, 36, 38, 40, 43, 48, 52, 54, 58, 66, 69, 72, 73, 75, 77, 81, 82, 83, 89, 90, 94, 104, 112, 116, 120, 121, 122, 125, 131, 137, 138, 139, 141, 142, 144, 147, 149, 155, 156, 157, 162, 165, 167, 170, 171, 173, 175, 183, 186, 187, 189, 190, 191, 192, 196, 198, 199]);
 
-    let activeMode = 'anotado'; // 'anotado' o 'no-anotado'
+    let activeMode = 'anotado';
     let userState = JSON.parse(localStorage.getItem('amba_bus_state') || '{}');
 
-    // Paletas de diseño por defecto (2 franjas + fondo)
+    // Mapeo exacto de los diseños de las imágenes recibidas
+    const EXACT_DESIGNS = {
+      // Primera tanda
+      242: { s1: '#000000', s2: '#facc15', bg: '#1d4ed8', text: '#ffffff' },
+      244: { s1: '#dc2626', s2: '#facc15', bg: '#1d4ed8', text: '#ffffff' },
+      245: { s1: '#38bdf8', s2: '#1e1b4b', bg: '#f8fafc', text: '#0f172a' },
+      247: { s1: '#15803d', s2: '#fef08a', bg: '#2563eb', text: '#ffffff' },
+      252: { s1: '#000000', s2: '#ffffff', bg: '#1e3a8a', text: '#ffffff' },
+      253: { s1: '#dc2626', s2: '#000000', bg: '#f8fafc', text: '#0f172a' },
+      256: { s1: '#2563eb', s2: '#000000', bg: '#f8fafc', text: '#0f172a' },
+      257: { s1: '#0284c7', s2: '#16a34a', bg: '#f8fafc', text: '#0f172a' },
+      314: { s1: '#000000', s2: '#ffffff', bg: '#ef4444', text: '#ffffff' },
+      315: { s1: '#facc15', s2: '#facc15', bg: '#facc15', text: '#0f172a' },
+      317: { s1: '#000000', s2: '#facc15', bg: '#0284c7', text: '#ffffff' },
+      318: { s1: '#dc2626', s2: '#facc15', bg: '#1e1b4b', text: '#ffffff' },
+      321: { s1: '#dc2626', s2: '#000000', bg: '#ffffff', text: '#0f172a' },
+      325: { s1: '#dc2626', s2: '#ffffff', bg: '#0284c7', text: '#ffffff' },
+      326: { s1: '#ffffff', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      338: { s1: '#1e3a8a', s2: '#ffffff', bg: '#38bdf8', text: '#ffffff' },
+      354: { s1: '#ffffff', s2: '#ffffff', bg: '#0284c7', text: '#ffffff' },
+
+      // Segunda tanda
+      145: { s1: '#be185d', s2: '#be185d', bg: '#be185d', text: '#ffffff' },
+      146: { s1: '#2563eb', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      148: { s1: '#22c55e', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      150: { s1: '#1d4ed8', s2: '#dc2626', bg: '#15803d', text: '#ffffff' },
+      151: { s1: '#1e3a8a', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      152: { s1: '#dc2626', s2: '#ffffff', bg: '#1e1b4b', text: '#ffffff' },
+      154: { s1: '#ffffff', s2: '#ffffff', bg: '#15803d', text: '#ffffff' },
+      158: { s1: '#2563eb', s2: '#ffffff', bg: '#dc2626', text: '#ffffff' },
+      159: { s1: '#16a34a', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      160: { s1: '#ffffff', s2: '#ffffff', bg: '#dc2626', text: '#ffffff' },
+      161: { s1: '#dc2626', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      180: { s1: '#ffffff', s2: '#2563eb', bg: '#dc2626', text: '#ffffff' },
+      185: { s1: '#dc2626', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      188: { s1: '#dc2626', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      193: { s1: '#dc2626', s2: '#2563eb', bg: '#ffffff', text: '#0f172a' },
+      194: { s1: '#ffffff', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      195: { s1: '#ffffff', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      197: { s1: '#22c55e', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      264: { s1: '#dc2626', s2: '#16a34a', bg: '#ffffff', text: '#0f172a' },
+      266: { s1: '#fde047', s2: '#1d4ed8', bg: '#dc2626', text: '#ffffff' },
+      269: { s1: '#1e3a8a', s2: '#fef08a', bg: '#dc2626', text: '#ffffff' },
+      271: { s1: '#38bdf8', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      273: { s1: '#ffffff', s2: '#2563eb', bg: '#dc2626', text: '#ffffff' },
+      275: { s1: '#16a34a', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      277: { s1: '#facc15', s2: '#facc15', bg: '#ffffff', text: '#0f172a' },
+      278: { s1: '#1d4ed8', s2: '#fef08a', bg: '#dc2626', text: '#ffffff' },
+      281: { s1: '#1d4ed8', s2: '#fef08a', bg: '#dc2626', text: '#ffffff' },
+      283: { s1: '#2563eb', s2: '#38bdf8', bg: '#ffffff', text: '#0f172a' },
+      295: { s1: '#ffffff', s2: '#ffffff', bg: '#15803d', text: '#ffffff' },
+      297: { s1: '#38bdf8', s2: '#ffffff', bg: '#dc2626', text: '#ffffff' },
+      298: { s1: '#000000', s2: '#facc15', bg: '#0284c7', text: '#ffffff' },
+      299: { s1: '#2563eb', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      300: { s1: '#16a34a', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      302: { s1: '#ffffff', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      303: { s1: '#ffffff', s2: '#ffffff', bg: '#ffffff', text: '#0f172a' },
+      306: { s1: '#ffffff', s2: '#ffffff', bg: '#dc2626', text: '#ffffff' },
+      307: { s1: '#000000', s2: '#dc2626', bg: '#0f766e', text: '#ffffff' }
+    };
+
+    // Paletas complementarias para las demás líneas
     const SCHEMES = [
       { s1: '#ef4444', s2: '#eab308', bg: '#1d4ed8', text: '#ffffff' },
       { s1: '#2563eb', s2: '#fef08a', bg: '#dc2626', text: '#ffffff' },
@@ -277,7 +338,6 @@
       { s1: '#7c3aed', s2: '#f43f5e', bg: '#0284c7', text: '#ffffff' }
     ];
 
-    // Construcción de la lista completa
     const busList = [];
 
     for (let i = 1; i <= 749; i++) {
@@ -297,7 +357,6 @@
         busList.push({ id: '263A', label: '263A', s1: '#2563eb', s2: '#2563eb', bg: '#ffffff', text: '#0f172a' });
         busList.push({ id: '263B', label: '263B', s1: '#1e293b', s2: '#fde047', bg: '#dc2626', text: '#ffffff' });
       } else if (i === 501) {
-        // Línea 501 por municipios
         const munis = [
           { name: 'Malvinas Arg.', s1: '#000', s2: '#fff', bg: '#059669', text: '#fff' },
           { name: 'E. Echeverría', s1: '#0284c7', s2: '#1e293b', bg: '#ffffff', text: '#0f172a' },
@@ -313,8 +372,8 @@
           busList.push({ id: `501_${idx}`, label: '501', sub: m.name, s1: m.s1, s2: m.s2, bg: m.bg, text: m.text });
         });
       } else {
-        const scheme = SCHEMES[i % SCHEMES.length];
-        busList.push({ id: `${i}`, label: `${i}`, ...scheme });
+        const design = EXACT_DESIGNS[i] || SCHEMES[i % SCHEMES.length];
+        busList.push({ id: `${i}`, label: `${i}`, ...design });
       }
     }
 
@@ -325,11 +384,7 @@
     }
 
     function toggleBus(id) {
-      if (activeMode === 'anotado') {
-        userState[id] = true;
-      } else {
-        userState[id] = false;
-      }
+      userState[id] = (activeMode === 'anotado');
       localStorage.setItem('amba_bus_state', JSON.stringify(userState));
       renderGrid();
     }
@@ -374,13 +429,11 @@
         grid.appendChild(card);
       });
 
-      // Actualizar estadísticas
       document.getElementById('count-anotados').innerText = anotadosCount;
       document.getElementById('count-total').innerText = busList.length;
       document.getElementById('count-pct').innerText = Math.round((anotadosCount / busList.length) * 100) + '%';
     }
 
-    // Inicializar
     renderGrid();
   </script>
 </body>
