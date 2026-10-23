@@ -3,44 +3,385 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Botones numerados</title>
-
+  <title>Tablero Coleccionista de Colectivos AMBA</title>
   <style>
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
     body {
-      margin: 0;
+      background-color: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 20px;
-      background: #f1f1f1;
-      font-family: Arial, sans-serif;
+      min-height: 100vh;
     }
 
-    .tablero {
+    /* Contenedor Superior Requerido */
+    .rect-top-1 {
+      width: 100%;
+      max-width: 450px;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa, #93c5fd);
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+    }
+
+    .rect-top-2 {
+      width: 100%;
+      max-width: 450px;
+      height: 3px;
+      background: linear-gradient(90deg, #ef4444, #f87171, #fca5a5);
+      margin-top: 2px;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+    }
+
+    /* Panel de Control de 450px */
+    .main-panel-450 {
+      width: 100%;
+      max-width: 450px;
+      background-color: #1e293b;
+      border-radius: 0 0 12px 12px;
+      padding: 20px;
+      margin-top: 2px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      border: 1px solid #334155;
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      text-align: center;
+      color: #f3f4f6;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+
+    .stat-box {
+      text-align: center;
+    }
+
+    .stat-val {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #38bdf8;
+    }
+
+    .stat-lbl {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    /* Selector Anotado / No Anotado */
+    .toggle-legend {
+      display: flex;
+      background: #0f172a;
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+
+    .legend-btn {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-weight: bold;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .legend-btn.active-anotado {
+      background: #10b981;
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    }
+
+    .legend-btn.active-no-anotado {
+      background: #ef4444;
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    .reset-btn {
+      padding: 10px 15px;
+      background: #334155;
+      color: #cbd5e1;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    /* Grid del Tablero */
+    .grid-container {
+      margin-top: 25px;
+      width: 100%;
+      max-width: 1200px;
       display: grid;
-      grid-template-columns: repeat(6, 65px);
-      gap: 8px;
-      justify-content: center;
+      grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+      gap: 12px;
     }
 
-    
-.boton::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: red;
-}
+    /* Estilo Chapa de Colectivo (2 franjas + fondo) */
+    .bus-card {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 65px;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      transition: transform 0.15s ease, filter 0.2s ease, opacity 0.2s ease;
+      user-select: none;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
 
-.boton::after {
-  content: "";
-  position: absolute;
-  top: 3px;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: white;
-}
+    .bus-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .stripe-1 {
+      height: 6px;
+      width: 100%;
+    }
+
+    .stripe-2 {
+      height: 6px;
+      width: 100%;
+    }
+
+    .bus-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1rem;
+      line-height: 1.1;
+      padding: 2px;
+      text-align: center;
+    }
+
+    .sub-tag {
+      font-size: 0.55rem;
+      font-weight: 600;
+      margin-top: 1px;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+
+    /* Estado NO ANOTADO (Tolerancia 50%) */
+    .bus-card.no-anotado {
+      opacity: 0.5;
+      filter: grayscale(40%);
+    }
+
+    /* Estado ANOTADO (Vibrante) */
+    .bus-card.anotado {
+      opacity: 1;
+      filter: grayscale(0%) drop-shadow(0 0 6px rgba(255,255,255,0.3));
+      border: 2px solid #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 2 rectángulos de 3px -->
+  <div class="rect-top-1"></div>
+  <div class="rect-top-2"></div>
+
+  <!-- Panel principal de 450px -->
+  <div class="main-panel-450">
+    <h1>Colectivos AMBA</h1>
+
+    <div class="stats">
+      <div class="stat-box">
+        <div class="stat-val" id="count-anotados">0</div>
+        <div class="stat-lbl">Anotados</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="count-total">0</div>
+        <div class="stat-lbl">Total Líneas</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val" id="count-pct">0%</div>
+        <div class="stat-lbl">Progreso</div>
+      </div>
+    </div>
+
+    <!-- Toggle de Leyenda -->
+    <div class="toggle-legend">
+      <button class="legend-btn active-anotado" id="btn-mode-anotado" onclick="setMode('anotado')">Marcar Anotado</button>
+      <button class="legend-btn" id="btn-mode-no-anotado" onclick="setMode('no-anotado')">Marcar No Anotado</button>
+    </div>
+
+    <div class="controls">
+      <input type="text" id="search" placeholder="Buscar colectivo..." oninput="renderGrid()">
+      <button class="reset-btn" onclick="resetAll()">Reiniciar</button>
+    </div>
+  </div>
+
+  <!-- Tablero de Botones -->
+  <div class="grid-container" id="grid"></div>
+
+  <script>
+    // Exclusiones: 3, 5, 6, 11, 13, 14, 16, 18, 23, 27, 30, 35, 36, 38, 40, 43, 48, 52, 54, 58, 66, 69, 72, 73, 75, 77, 81, 82, 83, 89, 90, 94, 104, 112, 116, 120, 121, 122, 125, 131, 137, 138, 139, 141, 142, 144, 147, 149, 155, 156, 157, 162, 165, 167, 170, 171, 173, 175, 183, 186, 187, 189, 190, 191, 192, 196, 198, 199
+    const EXCLUDED = new Set([3, 5, 6, 11, 13, 14, 16, 18, 23, 27, 30, 35, 36, 38, 40, 43, 48, 52, 54, 58, 66, 69, 72, 73, 75, 77, 81, 82, 83, 89, 90, 94, 104, 112, 116, 120, 121, 122, 125, 131, 137, 138, 139, 141, 142, 144, 147, 149, 155, 156, 157, 162, 165, 167, 170, 171, 173, 175, 183, 186, 187, 189, 190, 191, 192, 196, 198, 199]);
+
+    let activeMode = 'anotado'; // 'anotado' o 'no-anotado'
+    let userState = JSON.parse(localStorage.getItem('amba_bus_state') || '{}');
+
+    // Paletas de diseño por defecto (2 franjas + fondo)
+    const SCHEMES = [
+      { s1: '#ef4444', s2: '#eab308', bg: '#1d4ed8', text: '#ffffff' },
+      { s1: '#2563eb', s2: '#fef08a', bg: '#dc2626', text: '#ffffff' },
+      { s1: '#000000', s2: '#fde047', bg: '#059669', text: '#ffffff' },
+      { s1: '#1e293b', s2: '#38bdf8', bg: '#f8fafc', text: '#0f172a' },
+      { s1: '#7c3aed', s2: '#f43f5e', bg: '#0284c7', text: '#ffffff' }
+    ];
+
+    // Construcción de la lista completa
+    const busList = [];
+
+    for (let i = 1; i <= 749; i++) {
+      if (EXCLUDED.has(i)) continue;
+
+      if (i === 204) {
+        busList.push({ id: '204A', label: '204A', s1: '#0284c7', s2: '#fde047', bg: '#1e293b', text: '#ffffff' });
+        busList.push({ id: '204B', label: '204B', s1: '#0284c7', s2: '#fde047', bg: '#1e293b', text: '#ffffff' });
+      } else if (i === 228) {
+        ['A','B','C','D','E','F'].forEach(letter => {
+          busList.push({ id: `228${letter}`, label: `228${letter}`, s1: '#2563eb', s2: '#ef4444', bg: '#ffffff', text: '#0f172a' });
+        });
+      } else if (i === 239) {
+        busList.push({ id: '239A', label: '239A', s1: '#2563eb', s2: '#fde047', bg: '#dc2626', text: '#ffffff' });
+        busList.push({ id: '239B', label: '239B', s1: '#fde047', s2: '#2563eb', bg: '#dc2626', text: '#ffffff' });
+      } else if (i === 263) {
+        busList.push({ id: '263A', label: '263A', s1: '#2563eb', s2: '#2563eb', bg: '#ffffff', text: '#0f172a' });
+        busList.push({ id: '263B', label: '263B', s1: '#1e293b', s2: '#fde047', bg: '#dc2626', text: '#ffffff' });
+      } else if (i === 501) {
+        // Línea 501 por municipios
+        const munis = [
+          { name: 'Malvinas Arg.', s1: '#000', s2: '#fff', bg: '#059669', text: '#fff' },
+          { name: 'E. Echeverría', s1: '#0284c7', s2: '#1e293b', bg: '#ffffff', text: '#0f172a' },
+          { name: 'F. Varela', s1: '#881337', s2: '#eab308', bg: '#facc15', text: '#0f172a' },
+          { name: 'Moreno', s1: '#0284c7', s2: '#fde047', bg: '#dc2626', text: '#ffffff' },
+          { name: 'Pilar', s1: '#0284c7', s2: '#f43f5e', bg: '#334155', text: '#ffffff' },
+          { name: 'Alm. Brown', s1: '#1e293b', s2: '#eab308', bg: '#e2e8f0', text: '#0f172a' },
+          { name: 'Lobos', s1: '#1e293b', s2: '#eab308', bg: '#dc2626', text: '#ffffff' },
+          { name: 'Luján', s1: '#2563eb', s2: '#2563eb', bg: '#ffffff', text: '#0f172a' },
+          { name: 'Exaltación', s1: '#1e293b', s2: '#1e293b', bg: '#1e3a8a', text: '#ffffff' }
+        ];
+        munis.forEach((m, idx) => {
+          busList.push({ id: `501_${idx}`, label: '501', sub: m.name, s1: m.s1, s2: m.s2, bg: m.bg, text: m.text });
+        });
+      } else {
+        const scheme = SCHEMES[i % SCHEMES.length];
+        busList.push({ id: `${i}`, label: `${i}`, ...scheme });
+      }
+    }
+
+    function setMode(mode) {
+      activeMode = mode;
+      document.getElementById('btn-mode-anotado').className = `legend-btn ${mode === 'anotado' ? 'active-anotado' : ''}`;
+      document.getElementById('btn-mode-no-anotado').className = `legend-btn ${mode === 'no-anotado' ? 'active-no-anotado' : ''}`;
+    }
+
+    function toggleBus(id) {
+      if (activeMode === 'anotado') {
+        userState[id] = true;
+      } else {
+        userState[id] = false;
+      }
+      localStorage.setItem('amba_bus_state', JSON.stringify(userState));
+      renderGrid();
+    }
+
+    function resetAll() {
+      if (confirm('¿Deseas reiniciar todas las marcas?')) {
+        userState = {};
+        localStorage.removeItem('amba_bus_state');
+        renderGrid();
+      }
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('grid');
+      const searchVal = document.getElementById('search').value.toLowerCase();
+      grid.innerHTML = '';
+
+      let anotadosCount = 0;
+
+      busList.forEach(bus => {
+        const isAnotado = !!userState[bus.id];
+        if (isAnotado) anotadosCount++;
+
+        const matchesSearch = bus.label.toLowerCase().includes(searchVal) || 
+                              (bus.sub && bus.sub.toLowerCase().includes(searchVal));
+
+        if (!matchesSearch) return;
+
+        const card = document.createElement('div');
+        card.className = `bus-card ${isAnotado ? 'anotado' : 'no-anotado'}`;
+        card.onclick = () => toggleBus(bus.id);
+
+        card.innerHTML = `
+          <div class="stripe-1" style="background-color: ${bus.s1}"></div>
+          <div class="stripe-2" style="background-color: ${bus.s2}"></div>
+          <div class="bus-body" style="background-color: ${bus.bg}; color: ${bus.text}">
+            <span>${bus.label}</span>
+            ${bus.sub ? `<span class="sub-tag">${bus.sub}</span>` : ''}
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      // Actualizar estadísticas
+      document.getElementById('count-anotados').innerText = anotadosCount;
+      document.getElementById('count-total').innerText = busList.length;
+      document.getElementById('count-pct').innerText = Math.round((anotadosCount / busList.length) * 100) + '%';
+    }
+
+    // Inicializar
+    renderGrid();
+  </script>
+</body>
+</html>
